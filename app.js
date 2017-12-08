@@ -20,18 +20,11 @@ app.set('view engine', 'jade')
 
 // uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public/images', 'favicon.png')))
-app.use(logger((tokens, req, res) => {
-    return [
-        tokens.method(req, res),
-        tokens.url(req, res),
-        tokens.status(req, res),
-        tokens.res(req, res, 'content-length'), '-',
-        tokens['response-time'](req, res), 'ms'
-    ].join(' ')
-}))
+// dev combined common  <https://github.com/expressjs/morgan>
+app.use(logger('dev'))
 app.use(bodyParser.xml())
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -49,21 +42,22 @@ app.use('/user', user)
 
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  let err = new Error('Not Found')
-  err.status = 404
-  next(err)
+app.use(function (req, res, next) {
+    let err = new Error('Not Found')
+    err.status = 404
+    next(err)
 })
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message
-  res.locals.error = req.app.get('env') === 'development' ? err : {}
+app.use(function (err, req, res, next) {
+    // console.log(err)
+    // set locals, only providing error in development
+    res.locals.message = err.message
+    res.locals.error = req.app.get('env') === 'development' ? err : {}
 
-  // render the error page
-  res.status(err.status || 500)
-  res.render('error')
+    // render the error page
+    res.status(err.status || 500)
+    res.render('error')
 })
 
 module.exports = app
