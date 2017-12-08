@@ -3,7 +3,6 @@
 const express = require("express")
 const router = express.Router()
 const crypto = require('crypto')
-let {EVENT_TYPES, event} = require('../utils/event')
 
 // 公众平台设置的token
 const {TOKEN} = require('../utils/config')
@@ -16,7 +15,7 @@ router.all('/', (req, res, next) => {
     } catch (err) {
         console.log(err)
     }
-    // aac001   openid   loginId
+    // aac001   openid
     let signature = req.query.signature
     let timestamp = req.query.timestamp
     let nonce = req.query.nonce
@@ -39,11 +38,6 @@ function _scan(req) {
     try {
         const openid = req.query.openid
         const str = req.body.xml.EventKey[0]
-        event.$emit(EVENT_TYPES.login, {
-            id: str,
-            value: 1
-        })
-
     } catch (err) {
         console.log(err)
     }
