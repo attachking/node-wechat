@@ -8,20 +8,25 @@ const crypto = require('crypto')
 const {TOKEN} = require('../utils/config')
 
 router.all('/', (req, res, next) => {
-    try {
-        if (req.body.xml.MsgType[0] === 'event' && req.body.xml.Event[0] === 'SCAN') {
-            _scan(req)
-        }
-    } catch (err) {
-        console.log(err)
-    }
     // aac001   openid
     let signature = req.query.signature
     let timestamp = req.query.timestamp
     let nonce = req.query.nonce
     let echostr = req.query.echostr
+    const xml = req.body.xml
     if(check(timestamp, nonce, signature, TOKEN)){
-        res.send(echostr)
+        if (echostr) {
+            res.send(echostr)
+        } else if (xml) {
+            // 用户扫描二维码关注公众号事件
+            if (xml.MsgType && xml.Event && xml.MsgType[0] === 'event' && xml.Event[0] === 'SCAN') {
+                _scan(req, res)
+            } else {
+                res.send('')
+            }
+        } else {
+            res.send('')
+        }
     }else{
         res.send('It is not from weixin')
     }
@@ -34,13 +39,18 @@ function check(timestamp,nonce,signature,token){
     return currSign === signature
 }
 
-function _scan(req) {
-    try {
-        const openid = req.query.openid
-        const str = req.body.xml.EventKey[0]
-    } catch (err) {
-        console.log(err)
-    }
+function _scan(req, res) {
+    const xml = req.body.xml,
+        openid = req.query.openid,
+        fromUser = xml.ToUserName && xml.ToUserName[0],
+        resStr = `<xml>
+                    <ToUserName><![CDATA[${openid}]]></ToUserName>
+                    <FromUserName><![CDATA[${fromUser}]]></FromUserName>
+                    <CreateTime>${new Date().getTime()}</CreateTime>
+                    <MsgType><![CDATA[text]]></MsgType>
+                    <Content><![CDATA[欢迎~]]></Content>
+                 </xml>`
+    res.send(resStr)
 }
 
 
