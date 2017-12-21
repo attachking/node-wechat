@@ -11,6 +11,9 @@ const sign = require('./routes/sign')
 const receive = require('./routes/receive')
 const qrCode = require('./routes/qrCode')
 const user = require('./routes/user')
+const menu = require('./routes/menu')
+const test = require('./routes/test')
+const send = require('./routes/send')
 
 const app = express()
 
@@ -18,6 +21,7 @@ const app = express()
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
 
+app.use(express.static(path.join(__dirname, 'public')))
 // uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public/images', 'favicon.png')))
 // dev combined common  <https://github.com/expressjs/morgan>
@@ -26,7 +30,6 @@ app.use(bodyParser.xml())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'public')))
 
 // 路由及自定义中间件
 // 定时获取access_token和jsapi_ticket
@@ -39,6 +42,10 @@ app.use('/receive', receive)
 app.use('/qrCode', qrCode)
 // 获取用户
 app.use('/user', user)
+// 菜单配置
+app.use('/menu', menu)
+app.use('/test', test)
+app.use('/send', send)
 
 
 // catch 404 and forward to error handler

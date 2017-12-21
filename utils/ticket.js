@@ -3,8 +3,8 @@
 const axios = require('axios')
 const {APPID, SECRET} = require('./config')
 
-let access_token;
-let jsapi_ticket;
+let access_token
+let jsapi_ticket
 
 function getToken(){
     return axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APPID}&secret=${SECRET}`)
@@ -14,13 +14,14 @@ function getTicket() {
 }
 async function access(){
     try{
-        let tooken = await getToken();
-        access_token = tooken.data.access_token;
-        let ticket = await getTicket();
-        jsapi_ticket = ticket.data.ticket;
-        return 'access_token and jsapi_ticket successfully!'
+        let tooken = await getToken()
+        access_token = tooken.data.access_token
+        let ticket = await getTicket()
+        jsapi_ticket = ticket.data.ticket
+        console.log('access_token and jsapi_ticket successfully!')
+        return `access_token:${access_token}\njsapi_ticket:${jsapi_ticket}`
     }catch(err){
-        return err;
+        return err
     }
 }
 

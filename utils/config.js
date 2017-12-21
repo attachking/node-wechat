@@ -1,6 +1,6 @@
 
 // 公众平台设置的token
-const TOKEN = 'a67219598'
+const TOKEN = 'weixintest'
 
 // appid
 const APPID = 'wx855bb479a23fe4a9'
