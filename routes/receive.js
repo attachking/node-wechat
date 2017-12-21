@@ -3,6 +3,7 @@
 const express = require("express")
 const router = express.Router()
 const crypto = require('crypto')
+const axios = require('axios')
 
 // 公众平台设置的token
 const {TOKEN} = require('../utils/config')
@@ -24,9 +25,15 @@ router.all('/', (req, res, next) => {
                 _scan(req, res)
             } else if (xml.MsgType[0] === 'event' && xml.Event[0] === 'CLICK' && xml.EventKey && xml.EventKey[0] === 'V1001_TODAY_MUSIC') {
                 _click(req, res)
+            } else if (xml.MsgType[0] === 'event' && xml.Event[0] === 'LOCATION') {
+                _location(req, res)
+                res.send('')
             } else {
                 res.send('')
             }
+        } else if (xml && xml.MsgType && xml.MsgType[0] === 'text' && xml.Content[0].indexOf(':') !== -1) {
+            _sendMessage(req, res)
+            res.send('')
         } else {
             res.send('')
         }
@@ -70,6 +77,36 @@ function _click(req, res) {
                  </xml>`
     res.setHeader('Content-Type', 'application/xml;charset=utf-8')
     res.send(resStr)
+}
+
+function _location(req, res) {
+    const xml = req.body.xml,
+        openid = req.query.openid
+    axios.post(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${req.weixin.access_token}`, {
+        'touser': 'odT111rn01tAFeMb14AyAuTUIPf0',
+        'msgtype': 'text',
+        'text': {
+            'content': `${openid}\nLatitude:${xml.Latitude[0]}\nLongitude:${xml.Longitude[0]}`
+        }
+    }).then(data => {
+        console.log(data.data)
+    })
+}
+
+function _sendMessage(req, res) {
+    const xml = req.body.xml,
+        openid = xml.Content[0].split(':')[0],
+        str = xml.Content[0].split(':')[1]
+
+    axios.post(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${req.weixin.access_token}`, {
+        'touser': openid,
+        'msgtype': 'text',
+        'text': {
+            'content': str
+        }
+    }).then(data => {
+        console.log(data.data)
+    })
 }
 
 module.exports = router
