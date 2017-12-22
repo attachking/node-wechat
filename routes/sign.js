@@ -7,7 +7,7 @@ const {APPID} = require('../utils/config')
 
 router.all('/', (req, res, next) => {
     const url = req.query.url || req.body.url
-    let o = sign(req.weixin.jsapi_ticket, decodeURIComponent(url))
+    let o = sign(req.weixin.jsapi_ticket, url)
     o.appid = APPID
     res.send(o)
 })

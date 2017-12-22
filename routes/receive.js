@@ -5,6 +5,8 @@ const router = express.Router()
 const crypto = require('crypto')
 const axios = require('axios')
 
+const myopenid = 'odT111rn01tAFeMb14AyAuTUIPf0'
+
 // 公众平台设置的token
 const {TOKEN} = require('../utils/config')
 
@@ -82,11 +84,12 @@ function _click(req, res) {
 function _location(req, res) {
     const xml = req.body.xml,
         openid = req.query.openid
+    if (openid === myopenid) return
     axios.post(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${req.weixin.access_token}`, {
-        'touser': 'odT111rn01tAFeMb14AyAuTUIPf0',
+        'touser': myopenid,
         'msgtype': 'text',
         'text': {
-            'content': `${openid}\nLatitude:${xml.Latitude[0]}\nLongitude:${xml.Longitude[0]}`
+            'content': `${openid}\nLatitude:${xml.Latitude[0]}\nLongitude:${xml.Longitude[0]}\n<a href="http://60.205.177.230/test.html?lat=${xml.Latitude[0]}&lon=${xml.Longitude[0]}">点击查看位置</a>`
         }
     }).then(data => {
         console.log(data.data)

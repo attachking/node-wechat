@@ -3,179 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Title</title>
-    <style>
-        *{
-            margin: 0;
-            padding: 0;
-        }
-        #map{
-            height: 200px;
-            border-top: 1px solid #d9d9d9;
-            border-bottom: 1px solid #d9d9d9;
-        }
-        .item{
-            padding: 10px 10px;
-            display: flex;
-            overflow: hidden;
-            border-bottom: 1px solid #d9d9d9;
-        }
-        .item-left{
-            flex: 1;
-        }
-        .img-box{
-            height: 0;
-            padding: 50% 0;
-            overflow: hidden;
-            width: 100%;
-        }
-        .img-box img{
-            width: 100%;
-            margin-top: -50%;
-            border: none;
-            display: block;
-        }
-        .desc{
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-        }
-        .desc p{
-            padding: 5px 0 5px 10px;
-            font-size: 14px;
-        }
-        .desc .desc-title{
-            font-size: 16px;
-        }
-        .button-box{
-            padding: 10px 0;
-            text-align: center;
-        }
-        .button-box .button{
-            width: 100px;
-            height: 100px;
-            line-height: 100px;
-            color: #fff;
-            font-size: 20px;
-            border-radius: 50%;
-            display: inline-block;
-            background: #409EFF;
-        }
-        .button-box .button:active{
-            background: #3597fd;
-        }
-        .button-disabled{
-            background: #d9d9d9 !important;
-        }
-        .current-time{
-            padding: 5px 5px;
-        }
-    </style>
+    <title>查看位置</title>
 </head>
 <body>
-<div class="main">
-    <div id="list">
-        <div class="item">
-            <div class="item-left">
-                <div class="img-box">
-                    <img src="" alt="">
-                </div>
-            </div>
-            <div class="desc">
-                <p class="desc-title"></p>
-                <p class="desc-time">时间：<span class="time"></span></p>
-                <p class="desc-pos">地点：<span class="position"></span></p>
-            </div>
-        </div>
-    </div>
-    <div class="current-time">当前时间：<span id="currentTime"></span></div>
-    <div id="map"></div>
-    <div class="button-box">
-        <div class="button button-disabled" id="sign">签到</div>
-    </div>
-</div>
 <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
-<script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=YN6BZ-MG7CS-KLQO7-6VQ4T-AY5OQ-EVFZC"></script>
 <script src="javascripts/jquery-3.1.1.min.js"></script>
 <script>
-    var host = 'http://192.168.1.248:666';
-    var code = getSearch().code;
-    var state = getSearch().state;
-    var openId;
-    var latitude = 34.817170;
-    var longitude = 113.535910;
-    var dataResult;
-    var signId = [];
+    var lat = getSearch().lat;
+    var lon = getSearch().lon;
 
     $.ajax({
         method: 'post',
-        url: host + '/service/business/college/wechat/wechat/sign.xf',
+        url: '/sign',
         data: {
             url: encodeURIComponent(location.href.split('#')[0])
         },
         success: function (data) {
-            data = data.result;
             wx.config({
 
-                debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
 
-                appId: data.appId, // 必填，公众号的唯一标识
+                appId: data.appid, // 必填，公众号的唯一标识
 
                 timestamp: data.timestamp, // 必填，生成签名的时间戳
 
-                nonceStr: data.nonceStr, // 必填，生成签名的随机串
+                nonceStr: data.noncestr, // 必填，生成签名的随机串
 
-                signature: data.signature,// 必填，签名，见附录1
+                signature: data.signature, // 必填，签名，见附录1
 
-                jsApiList: ['chooseImage', 'getLocation', 'openLocation'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+                jsApiList: ['openLocation'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
             });
             wx.ready(function () {
-                getLocation(initMap);
-            })
+                openLocation();
+            });
             wx.error(function (err) {
                 alert('未知错误');
-            })
+            });
         }
     });
-
-    function getLocation(cb) {
-        wx.getLocation({
-            type: 'gcj02', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
-            success: function (res) {
-                if (typeof cb === 'function') {
-                    cb(res);
-                }
-                latitude = res.latitude // 纬度，浮点数，范围为90 ~ -90
-                longitude = res.longitude // 经度，浮点数，范围为180 ~ -180。
-            }
-        });
-    }
-    function openLocation(data) {
+    function openLocation() {
         wx.openLocation({
-            latitude: data.latitude, // 纬度，浮点数，范围为90 ~ -90
-            longitude: data.longitude, // 经度，浮点数，范围为180 ~ -180。
-            name: '郑州大学', // 位置名
-            address: '科学大道100号', // 地址详情说明
-            scale: 20, // 地图缩放级别,整形值,范围从1~28。默认为最大
+            latitude: lat, // 纬度，浮点数，范围为90 ~ -90
+            longitude: lon, // 经度，浮点数，范围为180 ~ -180。
+            name: '位置信息', // 位置名
+            address: '位置信息', // 地址详情说明
+            scale: 15, // 地图缩放级别,整形值,范围从1~28。默认为最大
             infoUrl: '' // 在查看位置界面底部显示的超链接,可点击跳转
-        });
-    }
-
-    function initMap(data) {
-        //定义map变量 调用 qq.maps.Map() 构造函数   获取地图显示容器
-        var center = new qq.maps.LatLng(data.latitude, data.longitude);
-        var map = new qq.maps.Map(document.getElementById("map"), {
-            center: center,      // 地图的中心地理坐标
-            zoom:15,
-            draggable: false,               // 设置是否可以拖拽
-            scrollwheel: false,             // 设置是否可以滚动
-            disableDoubleClickZoom: true,    // 设置是否可以双击放大
-            disableDefaultUI: true    // 禁止所有控件
-        });
-        var marker = new qq.maps.Marker({
-            position: center,
-            map: map
         });
     }
 
@@ -191,7 +64,7 @@
             'S': this.getMilliseconds() // 毫秒
         }
         if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + '').substr(4 - RegExp.$1.length))
-        for (let k in o) {
+        for (var k in o) {
             if (new RegExp('(' + k + ')').test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)))
         }
         return fmt
@@ -215,83 +88,6 @@
             return {};
         }
     }
-
-    // 当前时间
-    setInterval(function() {
-        $('#time').text(dateFormat.call(new Date(), 'yyyy-MM-dd hh:mm:ss'));
-        $('#currentTime').text(dateFormat.call(new Date(), 'yyyy-MM-dd hh:mm:ss'));
-    }, 1000);
-
-    // 获取openid
-    $.ajax({
-        method: 'post',
-        url: host + '/service/business/college/wechat/wechat/getOpenIdByCode.xf',
-        data: {
-            code: code
-        },
-        success: function(res) {
-            openId = res.result.openid;
-            renderList();
-        }
-    });
-
-    // 宣讲会/招聘会列表渲染
-    var copy = $('#list').find('.item').clone();
-    $('#list').find('.item').remove();
-    function renderList() {
-        $.ajax({
-            method: 'post',
-            url: host + '/service/business/college/wechat/wechat/getSignBreachDetail.xf',
-            data: {
-                openId: 'ogR00w1SaeBS4HmVdMQaDEhJEUoA',
-                mark: 1
-            },
-            success: function(res) {
-                $('#list').find('.item').remove();
-                $('#sign').addClass('button-disabled');
-                dataResult = res.result;
-                if (res.result && res.result.careerTalkList) {
-                    res.result.careerTalkList.forEach(function(item) {
-                        var dom = copy.clone();
-                        dom.find('.img-box img').attr('src', item.ccmu15);
-                        dom.find('.desc-title').text(item.ctTitle);
-                        dom.find('.time').text(item.ctCareerStarttime);
-                        dom.find('.position').text(item.crName);
-                        $('#list').append(dom);
-                        if (Number(item.isSign) === 0) {
-                            $('#sign').removeClass('button-disabled');
-                            signId.push(item.ctId);
-                        }
-                    });
-                    if ($('#sign').hasClass('button-disabled')) {
-                        $('#sign').text('已签到');
-                    } else {
-                        $('#sign').text('签到');
-                    }
-                }
-            }
-        });
-    }
-
-    // 签到逻辑
-    $('#sign').on('click', function() {
-        if (!$(this).hasClass('button-disabled')) {
-            $.ajax({
-                method: 'post',
-                url: host + '/service/business/college/wechat/wechat/OneKeySignBreach.xf',
-                data: {
-                    aab001: dataResult && dataResult.userid,
-                    signId: signId.join(','),
-                    mark: 1,
-                    address: latitude && longitude && latitude + ',' + longitude
-                },
-                success: function(res) {
-                    alert(res.error.message)
-                    renderList();
-                }
-            });
-        }
-    });
 </script>
 </body>
 </html>
